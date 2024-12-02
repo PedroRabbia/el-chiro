@@ -10,19 +10,21 @@ app.use(cors());
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Endpoints del backend
+const users = [
+  { username: "oficina", password: "1234", role: "OFICINA" },
+  { username: "chofer", password: "5678", role: "CHOFER" },
+];
+
 app.post("/api/login", (req, res) => {
-  // Lógica de autenticación
-});
+  const { username, password } = req.body;
+  const user = users.find((u) => u.username === username && u.password === password);
 
-app.get("/api/data", (req, res) => {
-  // Lógica para enviar datos
+  if (user) {
+    res.json({ success: true, role: user.role });
+  } else {
+    res.status(401).json({ success: false, message: "Usuario o contraseña inválidos" });
+  }
 });
-
-app.post("/api/data", (req, res) => {
-  // Lógica para agregar datos
-});
-
 // Puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
