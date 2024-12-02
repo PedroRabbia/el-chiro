@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - El Chiro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f3f3;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>El Chiro</h1>
+        <div id="login-form">
+            <label for="username">Usuario:</label>
+            <input type="text" id="username" placeholder="Ingresa tu usuario">
+            
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" placeholder="Ingresa tu contraseña">
+            
+            <button onclick="login()">Iniciar Sesión</button>
+        </div>
+
+        <div id="chofer-view" class="hidden">
+            <h2>Registro de Pesadas</h2>
+            <label for="chofer">Chofer:</label>
+            <input type="text" id="chofer" placeholder="Nombre del chofer">
+            
+            <label for="cliente">Cliente:</label>
+            <input type="text" id="cliente" placeholder="Nombre del cliente">
+            
+            <label for="kilos">Kilos:</label>
+            <input type="number" id="kilos" placeholder="Cantidad de kilos">
+            
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" placeholder="Destino">
+            
+            <button onclick="registrarPesada()">Registrar</button>
+        </div>
+
+        <div id="oficina-view" class="hidden">
+            <h2>Historial de Pesadas</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Chofer</th>
+                        <th>Cliente</th>
+                        <th>Kilos</th>
+                        <th>Destino</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-datos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            fetch(`${API_URL}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            })
+                .then((res) => {
+                    if (!res.ok) throw new Error("Credenciales inválidas");
+                    return res.json();
+                })
+                .then((data) => {
+                    document.getElementById("login-form").classList.add("hidden");
+                    if (data.role === "OFICINA") {
+                        document.getElementById("oficina-view").classList.remove("hidden");
+                        cargarDatos();
+                    } else if (data.role === "CHOFER") {
+                        document.getElementById("chofer-view").classList.remove("hidden");
+                    }
+                })
+                .catch((err) => alert(err.message));
+        }
+
+        function registrarPesada() {
+            const chofer = document.getElementById("chofer").value;
+            const cliente = document.getElementById("cliente").value;
+            const kilos = document.getElementById("kilos").value;
+            const destino = document.getElementById("destino").value;
+
+            fetch(`${API_URL}/data`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chofer, cliente, kilos, destino }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    alert("Registro exitoso");
+                    document.getElementById("chofer").value = "";
+                    document.getElementById("cliente").value = "";
+                    document.getElementById("kilos").value = "";
+                    document.getElementById("destino").value = "";
+                });
+        }
+
+        function cargarDatos() {
+            fetch(`${API_URL}/data`)
+                .then((res) => res.json())
+                .then((data) => {
+                    const tabla = document.getElementById("tabla-datos");
+                    tabla.innerHTML = data
+                        .map(
+                            (item) =>
+                                `<tr><td>${item.chofer}</td><td>${item.cliente}</td><td>${item.kilos}</td><td>${item.destino}</td></tr>`
+                        )
+                        .join("");
+                });
+        }
+    </script>
+</body>
+</html>
