@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use(express.static(path.join(__dirname, "../public")));
 
 const users = [
   { username: "oficina", password: "1234", role: "OFICINA" },
@@ -25,6 +25,7 @@ app.post("/api/login", (req, res) => {
     res.status(401).json({ success: false, message: "Usuario o contraseña inválidos" });
   }
 });
+
 // Puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
